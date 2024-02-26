@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title class="head-name">Taptune</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="icon" type="image/x-icon" href="./image/Neptune-mark-logo.png" />
+
+    <!-- demo fontawoisome -->
+    <link
+      rel="stylesheet"
+      href="https://site-assets.fontawesome.com/releases/v6.4.2/css/all.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://site-assets.fontawesome.com/releases/v6.4.2/css/sharp-solid.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://site-assets.fontawesome.com/releases/v6.4.2/css/sharp-regular.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://site-assets.fontawesome.com/releases/v6.4.2/css/sharp-light.css"
+    />
+
+    <script>
+      let username;
+      async function fetchUserData(username) {
+        try {
+          const response = await fetch(
+            `https://flask-gules.vercel.app/get`,
+            {
+              method: "GET",
+              headers: {
+                username: username, // Custom header
+              },
+            }
+          );
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+          }
+          const data = await response.json();
+          assignDatasToIds(data);
+        } catch (error) {
+          console.error("Failed to fetch data:", error);
+        }
+      }
+
+      async function submitUserData(userData) {
+        try {
+          const response = await fetch(
+            "https://flask-gules.vercel.app/submit",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Username: username,
+              },
+              body: JSON.stringify({
+                name: userData.name,
+                phoneNo: userData.phoneNo,
+                email: userData.email,
+                designation: userData.designation,
+                company: userData.company,
+              }),
+            }
+          );
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      }
+
+      function assignDatasToIds(data) {
+        document.querySelector(".head-name").innerHTML = data.name;
+        document.querySelector(".name").innerHTML = data.name;
+        document.querySelector(".designation").innerHTML =
+          data.designation == "" ? "" : data.designation;
+        document.querySelector(".profile-pic").src =
+          data.profilePicUrl == "" || data.profilePicUrl == "none"
+            ? "image/Pngtree.png"
+            : data.profilePicUrl;
+        document.querySelector(".banner").style.backgroundImage =
+          data.bannerPicUrl == ""
+            ? "image/banner.jpg"
+            : "url(" + data.bannerPicUrl + ")";
+        document.querySelector(".whatsapp").href =
+          data.whatsappNo == "" ? "" : "https://wa.me/" + data.whatsappNo;
+        // "https://wa.me/" + data.whatsappNo ?? "";
+        document.querySelector(".call").href =
+          data.phoneNo == "" ? "" : "tel:" + data.phoneNo;
+        document.querySelector(".location").href =
+          data.locationCordinates == "" ? "" : data.locationCordinates;
+        document.querySelector(".email").href =
+          data.email == "" ? "" : "mailto:" + data.email;
+        document.querySelector(".share-info").innerHTML =
+          "Share your info with <br><b>" + data.name + "</b>";
+
+        document.querySelector(".des-link").innerHTML =
+          data.businessName == "" ? "" : "@" + data.businessName; //
+        document.querySelector(".des-link").href = "#"; //
+        document.querySelector(".pr-logo").src =
+          data.businessProfilePicUrl == "" ||
+          data.businessProfilePicUrl == "none"
+            ? ""
+            : data.businessProfilePicUrl;
+
+        document.querySelector(".pr-logo-link").href = "";
+        if (
+          data.businessProfilePicUrl == "" ||
+          data.businessProfilePicUrl == "none"
+        ) {
+          document.querySelector(".profile-logo").classList.add("remove-link");
+          document.getElementById("followmetext").hidden = true;
+        }
+
+        if (data.locationCordinates == "") {
+          document.getElementById("locationLink").hidden = true;
+        }
+
+        if (data.whatsappNo == "") {
+          document.getElementById("whatsappLink").hidden = true;
+        }
+
+        let links = data.links ?? [];
+        const linksHtml = links
+          .map(
+            (link) =>
+              "<a href=" +
+              link.link +
+              ' class="social-button"><img src=' +
+              linksIcons.get(
+                linksIcons.has(link.name) ? link.name : "9fA!3#bG5@Mq!Z8#LpR2"
+              ) +
+              ' alt="Social Icon 1"/></a>'
+          )
+          .join("");
+        document.getElementById("socialMediaButtons").innerHTML = linksHtml;
+
+        document.querySelector(".loader-box").classList.add("load-end");
+      }
+
+      function getUsernameFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        username = extractValue();
+        fetchUserData(username);
+      }
+
+      function extractValue() {
+        const url = window.location.href;
+        const urlObj = new URL(url);
+        const queryString = urlObj.search;
+        const value = queryString.substring(1);
+
+        return value;
+      }
+      getUsernameFromURL();
+
+      let linksIcons = new Map([
+        ["facebook", "image/facebook.png"],
+        ["instagram", "image/instagram.png"],
+        ["twitter", "image/x.png"],
+        ["googlePlus", "image/google.png"],
+        ["behance", "image/behance.png"],
+        ["pinterest", "image/pinterest.png"],
+        ["spotify", "image/spotify.png"],
+        ["linkedin", "image/linkedin.png"],
+        ["whatsapp", "image/whatsapp.png"],
+        ["snapchat", "image/snap.png"],
+        ["tumblr", "image/tumblr.png"],
+        ["skype", "image/skype.png"],
+        ["youtube", "image/youtube.png"],
+        ["vimeo", "image/vimeo.png"],
+        ["dribbble", "image/dribbble.png"],
+        ["dropbox", "image/dropbox.png"],
+        ["9fA!3#bG5@Mq!Z8#LpR2", "image/web.png"],
+      ]);
+
+      // Example usage
+      const userData = {
+        name: "NAME",
+        phoneNo: "PHONE_NO",
+        email: "EMAIL",
+        designation: "DESIGNATION",
+        company: "COMPANY",
+      };
+
+      // submitUserData(userData);
+      // sharescript
+      async function share() {
+        var fname = document.getElementById("firstName").value;
+        var number = document.getElementById("cardNumber").value;
+        var EmailAddress = document.getElementById("cardEmailAddress").value;
+        var jobTitle = document.getElementById("cardjobTitle").value;
+        var cardWebsite = document.getElementById("cardWebsite").value;
+        // var personalBio=document.getElementById('personalBio').value;
+
+        if (
+          fname != "" &&
+          number != "" &&
+          EmailAddress != "" &&
+          jobTitle != "" &&
+          cardWebsite != ""
+        ) {
+          closeModal();
+          document.querySelector(".loader-box").classList.remove("load-end");
+
+          let dateTime = new Date();
+
+          await submitUserData({
+            name: fname,
+            phoneNo: number,
+            email: EmailAddress,
+            designation: jobTitle,
+            company: cardWebsite,
+          });
+
+          location.reload();
+        }
+      }
+
+      // form script
+      function openModal(id) {
+        document.getElementById(id).classList.add("open");
+        document.body.classList.add("modal-open");
+      }
+
+      // close currently open modal
+      function closeModal() {
+        document
+          .querySelector(".modal-container.open")
+          .classList.remove("open");
+        document.body.classList.remove("modal-open");
+      }
+
+      window.addEventListener("load", function () {
+        document.addEventListener("click", (event) => {
+          if (event.target.classList.contains("modal-container")) {
+            closeModal();
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="loader-box">
+      <span class="loader"></span>
+    </div>
+
+    <div class="box">
+      <div class="container">
+        <div class="banner"></div>
+        <div class="raw">
+          <div class="profile-div">
+            <div class="profile">
+              <img
+                class="profile-pic"
+                src="./image/Pngtree.png"
+                alt=""
+                style="height: 100%; width: 100%; object-fit: cover"
+              />
+            </div>
+            <div class="profile-logo">
+              <a class="pr-logo-link" href=""
+                ><img
+                  class="pr-logo"
+                  src="./image/Neptune-mark-logo.png"
+                  alt=""
+                  style="height: 100%; width: 100%; object-fit: cover"
+              /></a>
+            </div>
+          </div>
+          <div class="name-hed">
+            <h2 class="name">Neptune Mark</h2>
+            <i class="fa-solid fa-badge-check"></i>
+          </div>
+          <div class="designation-div">
+            <p class="designation">Digital Creators</p>
+            <a class="des-link" href="">@KnowledgCity</a>
+          </div>
+          <div class="button" id="addContactBtn">
+            <a class="contact add-contact" id="addToContactVCard"
+              >Add to Contact</a
+            >
+            <!-- <a class="contact share-contact connect-btn" onclick="openModal('modal-1')" href="">Connect With Me</a> -->
+            <button
+              class="contact share-contact connect-btn"
+              onclick="openModal('modal-1')"
+            >
+              Connect With Me
+            </button>
+          </div>
+          <p class="contactnow">Contact Info</p>
+          <div class="contact-icos">
+            <a class="contact-icon call" href=""
+              ><i class="fa-sharp fa-solid fa-phone"> </i> Call</a
+            >
+            <a class="contact-icon whatsapp" id="whatsappLink" href=""
+              ><i class="fa-brands fa-whatsapp"></i> Whatsapp</a
+            >
+          </div>
+          <div class="contact-icos contact-icos2">
+            <a class="contact-icon location" id="locationLink" href=""
+              ><i class="fa-sharp fa-solid fa-location-dot"></i> Location</a
+            >
+            <a class="contact-icon email" href=""
+              ><i class="fa-sharp fa-solid fa-envelope"></i> Mail</a
+            >
+          </div>
+          <!-- <a href="https://wa.me/+918089969860?text=niyas muhammed %0a niyasms " data-action="share/whatsapp/share">Share via Whatsapp</a> -->
+          <p class="contactnow" id="followmetext">Follow Me</p>
+          <div id="socialMediaButtons">
+            <!-- <a href="https://facebook.com" class="social-button"
+              ><img src="image/facebook.png" alt="Social Icon 1"
+            /></a> -->
+          </div>
+        </div>
+        <div class="bottam">
+          <div class="card-logo">
+            <img src="./image/card-logo.png" alt="" />
+          </div>
+          <p class="copyright">
+            Copyright © 2023
+            <a href="https://neptunemark.com/"> NeptuneMark</a>, All rights
+            reserved
+          </p>
+        </div>
+
+        <div id="modal-1" class="modal-container">
+          <div class="modal-body">
+            <span class="close-modal" onclick="closeModal()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24">
+                <path
+                  d="M12.0007 10.5865L16.9504 5.63672L18.3646 7.05093L13.4149 12.0007L18.3646 16.9504L16.9504 18.3646L12.0007 13.4149L7.05093 18.3646L5.63672 16.9504L10.5865 12.0007L5.63672 7.05093L7.05093 5.63672L12.0007 10.5865Z"
+                ></path>
+              </svg>
+            </span>
+            <div class="modal-header">
+              <h6 class="share-info">Share your info</h6>
+            </div>
+            <div class="divider"></div>
+
+            <form id="form">
+              <div class="input-group">
+                <input
+                  required
+                  id="firstName"
+                  type="text"
+                  name="firstName"
+                  autocomplete="name"
+                  class="input"
+                  value=""
+                />
+                <label for="firstName" class="user-label">Name</label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  required
+                  id="cardNumber"
+                  type="tel"
+                  name="cardNumber"
+                  autocomplete="tel"
+                  class="input"
+                  value=""
+                />
+                <label for="cardNumber" class="user-label">Mobile</label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  required
+                  id="cardEmailAddress"
+                  type="text"
+                  name="cardEmailAddress"
+                  autocomplete="email"
+                  class="input"
+                  value=""
+                />
+                <label for="cardNumber" class="user-label">Email</label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  id="cardjobTitle"
+                  type="text"
+                  name="cardjobTitle"
+                  autocomplete="organization-title"
+                  class="input"
+                  value=""
+                />
+                <label for="cardjobTitle" class="user-label">Designation</label>
+              </div>
+
+              <div class="input-group">
+                <input
+                  id="cardWebsite"
+                  type="text"
+                  name="cardWebsite"
+                  autocomplete="organization"
+                  class="input"
+                  value=""
+                />
+                <label for="cardWebsite" class="user-label">Company</label>
+              </div>
+
+              <!-- <div class="input-group">
+                      <input id="personalBio" type="text" name="personalBio" autocomplete="bio" class="input" value=""/>
+                      <label for="personalBio" class="user-label">Note</label>
+                    </div> -->
+
+              <div class="createConnectionButton" onclick="share()">
+                Share Contact
+              </div>
+              <!-- <a id="shareButton" class="submitBTN" href="">Share</a> -->
+              <!-- <a id="submitButton" class="submitBTN" href="">Connect</a> -->
+            </form>
+            <div class="disclaimer">
+              <p>Neptune Mark does not sell or share your data</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <script></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document
+          .getElementById("addToContactVCard")
+          .addEventListener("click", function () {
+            var companyName = document.querySelector(".des-link").innerHTML;
+            var orgLine = companyName
+              ? `ORG:${companyName.replace("@", "")}\n`
+              : "";
+
+            var vcfContent =
+              `BEGIN:VCARD
+VERSION:3.0
+FN:` +
+              document.querySelector(".head-name").innerHTML +
+              "\n" +
+              `N:;` +
+              document.querySelector(".head-name").innerHTML +
+              ";;;;\n" +
+              `X-WA-BIZ-NAME:` +
+              document.querySelector(".head-name").innerHTML +
+              "\n" +
+              orgLine +
+              `TEL;TYPE=WORK,VOICE:` +
+              document.querySelector(".call").href.substring(4) +
+              "\n" +
+              `EMAIL;TYPE=PREF,INTERNET:` +
+              document.querySelector(".email").href.substring(7) +
+              `
+TITLE:` +
+              document.querySelector(".designation").innerHTML +
+              `
+END:VCARD`;
+            var blob = new Blob([vcfContent], { type: "text/vcard" });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "contact.vcf");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          });
+      });
+    </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
